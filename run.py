@@ -46,7 +46,7 @@ def perform_test_loop():
             ndt_result = do_ndt_test()
         except Exception as ex:
             logger.error('Error in NDT test: %s', ex)
-        sleeptime = random.expovariate(1.0/3600.0)
+        sleeptime = random.expovariate(1.0/43200.0)
         resume_time = datetime.datetime.utcnow() + datetime.timedelta(seconds=sleeptime)
         logger.info('Sleeping for %u seconds (until %s)', sleeptime, resume_time)
         time.sleep(sleeptime)
