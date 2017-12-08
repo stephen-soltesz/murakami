@@ -7,6 +7,8 @@ import re
 import subprocess
 import time
 import urllib2
+import json
+import csv
 
 import pytz
 import tzlocal
@@ -40,12 +42,23 @@ def do_ndt_test():
     result_raw = subprocess.check_output(["measurement_kit", "--reportfile=/data/ndt-%d.njson"%now, "ndt"])
     return result_raw
 
+def summarize_tests():
+    with open("/share/history.csv", "wb") as historyfile: # Location of shared volume between docker containers
+        historywriter = csv.writer(historyfile)
+        for file in os.listdir("/data"):
+            with open("/data/" + file) as json_data:
+                d = json.load(json_data)
+                historywriter.writerow([d["measurement_start_time"], d["test_keys"]["simple"]["download"], d["test_keys"]["simple"]["upload"]])
+
+
+
 def perform_test_loop():
     while True:
         try:
             ndt_result = do_ndt_test()
         except Exception as ex:
             logger.error('Error in NDT test: %s', ex)
+        summarize_tests()
         sleeptime = random.expovariate(1.0/43200.0)
         resume_time = datetime.datetime.utcnow() + datetime.timedelta(seconds=sleeptime)
         logger.info('Sleeping for %u seconds (until %s)', sleeptime, resume_time)
