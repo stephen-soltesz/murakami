@@ -45,6 +45,7 @@ def do_ndt_test():
 def summarize_tests():
     with open("/share/history.csv", "wb") as historyfile: # Location of shared volume between docker containers
         historywriter = csv.writer(historyfile)
+        historywriter.writerow(["Datetime", "Download", "Upload"])
         for file in os.listdir("/data"):
             with open("/data/" + file) as json_data:
                 d = json.load(json_data)
