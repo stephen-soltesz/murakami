@@ -12,4 +12,4 @@ RUN mv GeoIP* ../test-runner/
 WORKDIR /home/mk-pi/test-runner
 ADD run.py . 
 RUN chmod +x run.py
-CMD python run.py
+CMD ["/usr/bin/python", "run.py"]
