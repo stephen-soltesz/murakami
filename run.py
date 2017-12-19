@@ -6,6 +6,8 @@ import random
 import re
 import subprocess
 import time
+import tempfile
+import shutil
 import urllib2
 import json
 import csv
@@ -25,15 +27,14 @@ def do_ndt_test():
     return result_raw
 
 def summarize_tests():
-    with open("/share/history.csv", "wb") as historyfile: # Location of shared volume between docker containers
-        historywriter = csv.writer(historyfile)
+    with tempfile.NamedTemporaryFile(delete=False) as tmpfile: # Location of shared volume between docker containers
+        historywriter = csv.writer(tmpfile)
         historywriter.writerow(["Datetime", "Download", "Upload"])
         for file in os.listdir("/data"):
             with open("/data/" + file) as json_data:
-                d = json.load(json_data)
                 historywriter.writerow([d["measurement_start_time"], d["test_keys"]["simple"]["download"], d["test_keys"]["simple"]["upload"]])
-
-
+        tmp_loc = tmpfile.name
+        shutil.copy(tmp_loc, "/share/history.csv")
 
 def perform_test_loop():
     while True:
