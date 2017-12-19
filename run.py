@@ -13,24 +13,6 @@ import csv
 import pytz
 import tzlocal
 
-def setup_logger():
-    logger = logging.getLogger('pyNDT')
-    logger.setLevel(logging.INFO)
-
-    formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
-
-    file_handler = logging.FileHandler('pyndt.log')
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
-
-    console_handler = logging.StreamHandler()
-    console_handler.setFormatter(formatter)
-    logger.addHandler(console_handler)
-
-    return logger
-
-logger = setup_logger()
-
 def format_time(utc_time):
     utc_time_explicit = utc_time.replace(tzinfo=pytz.utc)
     localized = utc_time_explicit.astimezone(tzlocal.get_localzone())
@@ -58,11 +40,11 @@ def perform_test_loop():
         try:
             ndt_result = do_ndt_test()
         except Exception as ex:
-            logger.error('Error in NDT test: %s', ex)
+            logging.error('Error in NDT test: %s', ex)
         summarize_tests()
         sleeptime = random.expovariate(1.0/43200.0)
         resume_time = datetime.datetime.utcnow() + datetime.timedelta(seconds=sleeptime)
-        logger.info('Sleeping for %u seconds (until %s)', sleeptime, resume_time)
+        logging.info('Sleeping for %u seconds (until %s)', sleeptime, resume_time)
         time.sleep(sleeptime)
 
 if __name__ == "__main__":
