@@ -36,14 +36,14 @@ def summarize_tests():
         tmp_loc = tmpfile.name
         shutil.copy(tmp_loc, "/share/history.csv")
 
-def perform_test_loop():
+def perform_test_loop(expected_sleep_secs=24*60*60):
     while True:
         try:
             ndt_result = do_ndt_test()
         except subprocess.CalledProcessError as ex:
             logging.error('Error in NDT test: %s', ex)
         summarize_tests()
-        sleeptime = random.expovariate(1.0/43200.0)
+        sleeptime = random.expovariate(1.0/expected_sleep_secs)
         resume_time = datetime.datetime.utcnow() + datetime.timedelta(seconds=sleeptime)
         logging.info('Sleeping for %u seconds (until %s)', sleeptime, resume_time)
         time.sleep(sleeptime)
