@@ -40,7 +40,7 @@ def perform_test_loop():
     while True:
         try:
             ndt_result = do_ndt_test()
-        except Exception as ex:
+        except subprocess.CalledProcessError as ex:
             logging.error('Error in NDT test: %s', ex)
         summarize_tests()
         sleeptime = random.expovariate(1.0/43200.0)
