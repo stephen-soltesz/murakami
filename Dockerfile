@@ -5,7 +5,8 @@ RUN apt-get update && apt-get install -y git dh-autoreconf autoconf automake lib
 RUN pip install pytz tzlocal
 WORKDIR /home/mk-pi/
 RUN mkdir test-runner
-RUN git clone --recurse-submodules https://github.com/measurement-kit/measurement-kit.git 
+RUN mkdir measurement-kit
+ADD measurement-kit measurement-kit
 WORKDIR measurement-kit
 RUN ./autogen.sh && ./configure && make && make install && ldconfig
 RUN mv GeoIP* ../test-runner/
