@@ -32,8 +32,11 @@ def summarize_tests():
         historywriter.writerow(["Datetime", "Download", "Upload"])
         for file in os.listdir("/data"):
             with open("/data/" + file) as json_data:
+                d = json.load(json_data)
                 historywriter.writerow([d["measurement_start_time"], d["test_keys"]["simple"]["download"], d["test_keys"]["simple"]["upload"]])
         tmp_loc = tmpfile.name
+        tmpfile.close()
+        logging.info("Copying temp file from %s", tmp_loc)
         shutil.copy(tmp_loc, "/share/history.csv")
 
 def perform_test_loop(expected_sleep_secs=24*60*60):
@@ -49,4 +52,6 @@ def perform_test_loop(expected_sleep_secs=24*60*60):
         time.sleep(sleeptime)
 
 if __name__ == "__main__":
+    root_log = logging.getLogger()
+    root_log.setLevel(logging.INFO)
     perform_test_loop()
