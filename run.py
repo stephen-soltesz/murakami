@@ -23,6 +23,14 @@ def format_time(utc_time):
     return localized.strftime('%Y-%m-%dT%H:%M:%S%z')
     
 def do_ndt_test(country_code):
+    """Runs the NDT test as a subprocess and returns the raw results.
+
+    Args:
+       `country_code`: A capitalized, two-letter country code representing the location of
+           the desired test server. The empty string can be used to get the mlab_ns default.
+    Returns:
+       The STDOUT of the call to `measurement_kit`.
+    """
     now = int(subprocess.check_output(["date", "-u", "+%s"]))
     if country_code = "": # If there is a country code, use it, otherwise default
         result_raw = subprocess.check_output(["measurement_kit", "--reportfile=/data/ndt-%d.njson"%now, "ndt"])
@@ -31,7 +39,13 @@ def do_ndt_test(country_code):
     return result_raw
 
 def summarize_tests():
-    with tempfile.NamedTemporaryFile(delete=False) as tmpfile: # Location of shared volume between docker containers
+    """Converts measurement_kit .njson test results into a single .csv file.
+
+    This function checks the `/data/` directory for all files, reads the json into an object and writes
+    the object into a csv file that it stores in `/share/history.csv` (the `share` directory is shared
+    between this Docker image and the dashboard image).
+    """
+    with tempfile.NamedTemporaryFile(delete=False) as tmpfile: 
         historywriter = csv.writer(tmpfile)
         historywriter.writerow(["Datetime", "Download", "Upload"])
         for file in os.listdir("/data"):
@@ -44,6 +58,16 @@ def summarize_tests():
         shutil.copy(tmp_loc, "/share/history.csv")
 
 def perform_test_loop(expected_sleep_secs=24*60*60):
+    """The main loop of the script.
+    
+    It gathers the computer's location, then loops forever calling measurement_kit twice each time, once with
+    the default mlab_ns behavior and once setting the computer's country code as the `country` policy. It
+    then sleeps for a random interval (determined by an exponential distribution) that will average out to
+    expected_sleep_seconds.
+
+    Args:
+        `expected_sleep_seconds`: The desired average time, in seconds, between tests.
+    """
     # Get location by IP for country specific test
     # Example taken from https://stackoverflow.com/questions/11787941/get-physical-position-of-device-with-python
     f = urllib2.urlopen('http://freegeoip.net/json')
