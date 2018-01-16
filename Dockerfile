@@ -1,5 +1,5 @@
 FROM ubuntu
-MAINTAINER Measuremen Lab Support <support@measurementlab.net>
+MAINTAINER Measurement Lab Support <support@measurementlab.net>
 # Install the packages we need
 RUN apt-get update && apt-get install -y git dh-autoreconf autoconf automake libtool gcc make libssl-dev libevent-dev libgeoip-dev python python-pip paris-traceroute wget
 RUN pip install pytz tzlocal
