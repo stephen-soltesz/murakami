@@ -21,9 +21,12 @@ def format_time(utc_time):
     localized = localized.replace(microsecond=0)
     return localized.strftime('%Y-%m-%dT%H:%M:%S%z')
     
-def do_ndt_test():
+def do_ndt_test(country_code):
     now = int(subprocess.check_output(["date", "-u", "+%s"]))
-    result_raw = subprocess.check_output(["measurement_kit", "--reportfile=/data/ndt-%d.njson"%now, "ndt"])
+    if country_code = "": # If there is a country code, use it, otherwise default
+        result_raw = subprocess.check_output(["measurement_kit", "--reportfile=/data/ndt-%d.njson"%now, "ndt"])
+    else:
+        result_raw = subprocess.check_output(["measurement_kit", "--reportfile=/data/ndt-%d.njson"%now, "ndt", "-C", country_code])
     return result_raw
 
 def summarize_tests():
@@ -40,9 +43,22 @@ def summarize_tests():
         shutil.copy(tmp_loc, "/share/history.csv")
 
 def perform_test_loop(expected_sleep_secs=24*60*60):
+    # Get location by IP for country specific test
+    # Example taken from https://stackoverflow.com/questions/11787941/get-physical-position-of-device-with-python
+    f = urllib2.urlopen('http://freegeoip.net/json')
+    json_string = f.read()
+    f.close()
+    location = json.loads(json_string)
     while True:
+        # Run the test twice, once with the default mlab_ns responder
+        # and once explicitly with the `country` policy set to the 
+        # endpoint's country as determined above by freegeoip.net.
         try:
-            ndt_result = do_ndt_test()
+            ndt_result = do_ndt_test("")
+        except subprocess.CalledProcessError as ex:
+            logging.error('Error in NDT test: %s', ex)
+        try:
+            ndt_result = do_ndt_test(location['country_code'])
         except subprocess.CalledProcessError as ex:
             logging.error('Error in NDT test: %s', ex)
         summarize_tests()
