@@ -22,12 +22,13 @@ def format_time(utc_time):
     localized = localized.replace(microsecond=0)
     return localized.strftime('%Y-%m-%dT%H:%M:%S%z')
     
-def do_ndt_test(country_code):
+def do_ndt_test(country_code=""):
     """Runs the NDT test as a subprocess and returns the raw results.
 
     Args:
        `country_code`: A capitalized, two-letter country code representing the location of
-           the desired test server. The empty string can be used to get the mlab_ns default.
+           the desired test server. If no country code is supplied, the script uses the default mlab_ns
+           behavior.
     Returns:
        The STDOUT of the call to `measurement_kit`.
     """
