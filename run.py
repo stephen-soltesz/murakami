@@ -33,7 +33,7 @@ def do_ndt_test(country_code=""):
        The STDOUT of the call to `measurement_kit`.
     """
     now = int(subprocess.check_output(["date", "-u", "+%s"]))
-    if country_code = "": # If there is a country code, use it, otherwise default
+    if country_code == "": # If there is a country code, use it, otherwise default
         result_raw = subprocess.check_output(["measurement_kit", "--reportfile=/data/ndt-%d.njson"%now, "ndt"])
     else:
         result_raw = subprocess.check_output(["measurement_kit", "--reportfile=/data/ndt-%d.njson"%now, "ndt", "-C", country_code])
