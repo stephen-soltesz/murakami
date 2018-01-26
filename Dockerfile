@@ -1,7 +1,7 @@
 FROM ubuntu as build
 MAINTAINER Measurement Lab Support <support@measurementlab.net>
 # Install the packages we need
-RUN apt-get update && apt-get install -y git dh-autoreconf autoconf automake libtool gcc make libssl-dev libevent-dev libgeoip-dev python python-pip paris-traceroute wget
+RUN apt-get update && apt-get install -y git dh-autoreconf autoconf automake libtool gcc make libssl-dev libevent-dev libgeoip-dev paris-traceroute wget
 WORKDIR /home/mk-pi/
 RUN mkdir test-runner
 RUN mkdir measurement-kit
