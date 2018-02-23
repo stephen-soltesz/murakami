@@ -34,9 +34,10 @@ def do_ndt_test(country_code=""):
     """
     now = int(subprocess.check_output(["date", "-u", "+%s"]))
     if country_code == "": # If there is a country code, use it, otherwise default
-        result_raw = subprocess.check_output(["measurement_kit", "--reportfile=/data/ndt-%d.njson"%now, "ndt"])
+        # We are using the `-g` flag due to a regex stack overflow segmentation fault bug in GNU's C++ library
+        result_raw = subprocess.check_output(["/test-runner/measurement_kit", "-g", "--reportfile=/data/ndt-%d.njson"%now, "ndt"])
     else:
-        result_raw = subprocess.check_output(["measurement_kit", "--reportfile=/data/ndt-%d.njson"%now, "ndt", "-C", country_code])
+        result_raw = subprocess.check_output(["/test-runner/measurement_kit", "-g", "--reportfile=/data/ndt-%d.njson"%now, "ndt", "-C", country_code])
     return result_raw
 
 def summarize_tests():
