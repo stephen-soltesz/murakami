@@ -59,7 +59,7 @@ def summarize_tests():
         logging.info("Copying temp file from %s", tmp_loc)
         shutil.copy(tmp_loc, "/share/history.csv")
 
-def perform_test_loop(expected_sleep_secs=24*60*60):
+def perform_test_loop(expected_sleep_secs=12*60*60):
     """The main loop of the script.
     
     It gathers the computer's location, then loops forever calling measurement_kit twice each time, once with
