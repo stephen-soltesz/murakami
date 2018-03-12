@@ -16,12 +16,7 @@ import csv
 import pytz
 import tzlocal
 
-def format_time(utc_time):
-    utc_time_explicit = utc_time.replace(tzinfo=pytz.utc)
-    localized = utc_time_explicit.astimezone(tzlocal.get_localzone())
-    localized = localized.replace(microsecond=0)
-    return localized.strftime('%Y-%m-%dT%H:%M:%S%z')
-    
+   
 def do_ndt_test(country_code=""):
     """Runs the NDT test as a subprocess and returns the raw results.
 
@@ -35,9 +30,12 @@ def do_ndt_test(country_code=""):
     now = int(subprocess.check_output(["date", "-u", "+%s"]))
     if country_code == "": # If there is a country code, use it, otherwise default
         # We are using the `-g` flag due to a regex stack overflow segmentation fault bug in GNU's C++ library
-        result_raw = subprocess.check_output(["/test-runner/measurement_kit", "-g", "--reportfile=/data/ndt-%d.njson"%now, "ndt"])
+        # Measurement-kit issue #1276: https://github.com/measurement-kit/measurement-kit/issues/1276
+        result_raw = subprocess.check_output(["/test-runner/measurement_kit", "-g",
+            "--reportfile=/data/ndt-%d.njson"%now, "ndt"])
     else:
-        result_raw = subprocess.check_output(["/test-runner/measurement_kit", "-g", "--reportfile=/data/ndt-%d.njson"%now, "ndt", "-C", country_code])
+        result_raw = subprocess.check_output(["/test-runner/measurement_kit", "-g",
+            "--reportfile=/data/ndt-%d.njson"%now, "ndt", "-C", country_code])
     return result_raw
 
 def summarize_tests():
@@ -53,7 +51,9 @@ def summarize_tests():
         for file in os.listdir("/data"):
             with open("/data/" + file) as json_data:
                 d = json.load(json_data)
-                historywriter.writerow([d["measurement_start_time"], d["test_keys"]["simple"]["download"], d["test_keys"]["simple"]["upload"]])
+                historywriter.writerow([d["measurement_start_time"], d["test_keys"]["simple"]["download"],
+                    d["test_keys"]["simple"]["upload"],
+                    d["test_keys"]["simple"]["ping"]])
         tmp_loc = tmpfile.name
         tmpfile.close()
         logging.info("Copying temp file from %s", tmp_loc)
