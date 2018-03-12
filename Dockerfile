@@ -1,10 +1,25 @@
-FROM ubuntu
-MAINTAINER Peter Boothe <pboothe@google.com>
+FROM arm32v6/alpine as build
+MAINTAINER Measurement Lab Support <support@measurementlab.net>
 # Install the packages we need
-RUN apt-get update && apt-get install -y git automake gcc make libssl-dev libjansson-dev python
-RUN git clone --recursive https://github.com/ndt-project/ndt
-RUN cd ndt/I2util && ./bootstrap.sh && ./configure && make && make install
-RUN cd ndt && ./bootstrap && ./configure && make
-ADD run_tests.py /run_tests.py
-RUN chmod +x /run_tests.py
-CMD /run_tests.py
+RUN apk add --update build-base linux-headers git autoconf automake libtool gcc make libressl-dev libevent-dev geoip geoip-dev wget
+WORKDIR /home/mk-pi/
+RUN mkdir test-runner
+RUN mkdir measurement-kit
+ADD measurement-kit measurement-kit
+WORKDIR measurement-kit
+RUN /home/mk-pi/measurement-kit/autogen.sh
+RUN /home/mk-pi/measurement-kit/configure --disable-shared
+RUN make
+RUN mv measurement_kit ../test-runner/
+RUN mv GeoIP* ../test-runner/
+WORKDIR /home/mk-pi/test-runner
+ADD run.py . 
+CMD python run.py
+
+FROM arm32v6/alpine
+RUN apk add --update libstdc++ python py-pip libressl libevent geoip ca-certificates
+RUN update-ca-certificates
+RUN pip install pytz tzlocal
+COPY --from=build /home/mk-pi/test-runner /test-runner
+WORKDIR /test-runner
+CMD python run.py
