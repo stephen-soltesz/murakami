@@ -14,7 +14,8 @@ Murakami uses [docker](https://www.docker.com/) to make installation easier acro
 2. Install docker using [these instructions](https://docs.docker.com/install/linux/docker-ce/debian/#install-using-the-convenience-script) (don't try to install docker using `apt-get` as you will get a very old version).
 3. Run the image:
 ```shell
-$ docker run -d --name mlab -v data:/data -v ~/share:/share --restart always m-lab/murakami
+$ mkdir data share
+$ docker run -d --name mlab -v data:/data -v ~/share:/share --restart always measurementlab/murakami:1.0
 ```
 
 ## Statistics
