@@ -16,7 +16,7 @@ import csv
 import pytz
 import tzlocal
 
-   
+
 def do_ndt_test(country_code=""):
     """Runs the NDT test as a subprocess and returns the raw results.
 
@@ -48,44 +48,34 @@ def summarize_tests():
     with tempfile.NamedTemporaryFile(delete=False) as tmpfile: 
         historywriter = csv.writer(tmpfile)
         historywriter.writerow(["Datetime", "Download", "Upload"])
-        for file in os.listdir("/data"):
+        for file in sorted(os.listdir("/data")):
             with open("/data/" + file) as json_data:
-                d = json.load(json_data)
-                historywriter.writerow([d["measurement_start_time"], d["test_keys"]["simple"]["download"],
-                    d["test_keys"]["simple"]["upload"],
-                    d["test_keys"]["simple"]["ping"]])
+                try:
+                  d = json.load(json_data)
+                  historywriter.writerow([d["measurement_start_time"], d["test_keys"]["simple"]["download"], d["test_keys"]["simple"]["upload"]])
+                except Exception as e:
+                  logging.error('Failed to write row %s', e)
+                  pass
         tmp_loc = tmpfile.name
-        tmpfile.close()
-        logging.info("Copying temp file from %s", tmp_loc)
-        shutil.copy(tmp_loc, "/share/history.csv")
+    logging.info("Updating /share/history.csv")
+    shutil.move(tmp_loc, "/share/history.csv")
 
 def perform_test_loop(expected_sleep_secs=12*60*60):
     """The main loop of the script.
-    
-    It gathers the computer's location, then loops forever calling measurement_kit twice each time, once with
-    the default mlab_ns behavior and once setting the computer's country code as the `country` policy. It
-    then sleeps for a random interval (determined by an exponential distribution) that will average out to
-    expected_sleep_seconds.
+
+    It gathers the computer's location, then loops forever calling
+    measurement_kit once with the default mlab_ns behavior. It then sleeps
+    for a random interval (determined by an exponential distribution) that
+    will average out to expected_sleep_seconds.
 
     Args:
-        `expected_sleep_seconds`: The desired average time, in seconds, between tests.
+        `expected_sleep_seconds`: The desired average time, in seconds,
+        between tests.
     """
-    # Get location by IP for country specific test
-    # Example taken from https://stackoverflow.com/questions/11787941/get-physical-position-of-device-with-python
-    f = urllib2.urlopen('http://freegeoip.net/json')
-    json_string = f.read()
-    f.close()
-    location = json.loads(json_string)
     while True:
-        # Run the test twice, once with the default mlab_ns responder
-        # and once explicitly with the `country` policy set to the 
-        # endpoint's country as determined above by freegeoip.net.
+        # Run the test once with the default mlab_ns responder.
         try:
-            ndt_result = do_ndt_test("")
-        except subprocess.CalledProcessError as ex:
-            logging.error('Error in NDT test: %s', ex)
-        try:
-            ndt_result = do_ndt_test(location['country_code'])
+            _ = do_ndt_test("")
         except subprocess.CalledProcessError as ex:
             logging.error('Error in NDT test: %s', ex)
         summarize_tests()
